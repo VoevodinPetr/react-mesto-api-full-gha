@@ -4,7 +4,7 @@ const NotFound = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
-  Card.find({})
+  Card.find({}).populate('owner').populate('likes')
     .then((cards) => res.status(200).send(cards))
     .catch((err) => {
       next(err);
@@ -15,7 +15,7 @@ module.exports.createNewCard = (req, res, next) => {
   const { name, link } = req.body;
   const ownerId = req.user._id;
 
-  return Card.create({ name, link, owner: ownerId })
+  return Card.create({ name, link, owner: ownerId }).populate('owner').populate('likes')
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -28,7 +28,7 @@ module.exports.createNewCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  return Card.findById(cardId)
+  return Card.findById(cardId).populate('owner').populate('likes')
     .orFail(new NotFound(`Карточка с указанным _id ${cardId} не найдена`))
     .then((card) => {
       if (card) {
@@ -62,7 +62,8 @@ module.exports.likeCard = (req, res, next) => {
     {
       new: true,
     },
-  ).orFail(new NotFound(`Карточка с указанным _id ${cardId} не найдена`))
+  ).populate('owner').populate('likes')
+    .orFail(new NotFound(`Карточка с указанным _id ${cardId} не найдена`))
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -83,7 +84,8 @@ module.exports.dislikeCard = (req, res, next) => {
     {
       new: true,
     },
-  ).orFail(new NotFound(`Карточка с указанным _id ${cardId} не найдена`))
+  ).populate('owner').populate('likes')
+    .orFail(new NotFound(`Карточка с указанным _id ${cardId} не найдена`))
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {

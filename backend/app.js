@@ -18,6 +18,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(cors());
+app.use(requestLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,7 +29,7 @@ app.get('/crash-test', () => {
 });
 
 app.use(routes);
-app.use(requestLogger);
+
 app.use(errorLogger);
 app.use(errors());
 app.use(handelError);
